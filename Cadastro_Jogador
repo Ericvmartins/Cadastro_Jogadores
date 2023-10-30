@@ -1,0 +1,155 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define TAM 15
+
+typedef struct{
+    int dia, mes, ano;
+}Data;
+
+typedef struct{
+    char rua[50];
+    char bairro[50];
+}Endereco;
+
+
+typedef struct{
+    char nome[50];
+    int numero;
+    Data dataNas;
+    Endereco end;
+}Jogador;
+
+// Impressão das informações do Jogador
+
+void imprimirData(Data d){
+    printf("%d/%d/%d\n", d.dia, d.mes, d.ano);
+}
+
+void imprimirEndereco(Endereco end){
+    printf("\tEndereco:\n");
+    printf("\t\tRua: %s", end.rua);
+    printf("\t\tBairro: %s", end.bairro);
+}
+
+
+void imprirJogador(Jogador j){
+    printf("\n\tNome: %s", j.nome);
+    printf("\tNumero: %d\n", j.numero);
+    printf("\tData de nas.: ");
+    imprimirData(j.dataNas);
+    imprimirEndereco(j.end);
+}
+
+// Leitura dos dados do Jogador
+
+Data lerData(){
+    Data d;
+    printf("\nDigite a data no formato dd mm aaaa: ");
+    scanf("%d%d%d", &d.dia, &d.mes, &d.ano);
+    getchar();
+    return d;
+}
+
+Endereco lerEndereco(){
+    Endereco end;
+    printf("\nRua: ");
+    fgets(end.rua, 49, stdin);
+    printf("\nBairro: ");
+    getchar();
+    return end;
+}
+
+
+Jogador lerJogador(){
+    Jogador j;
+    printf("\nNome: ");
+    fgets(j.nome, 49, stdin);
+    printf("\nNumero: ");
+    scanf("%d", &j.numero);
+    printf("\nData de nascimento: ");
+    j.dataNas = lerData();
+    j.end = lerEndereco();
+    return j;
+}
+
+// Tabela Hash
+
+void inicializarTabela(Jogador t[]){
+    int i;
+
+    for(i = 0; i < TAM; i++)
+        t[i].numero = 0;
+}
+
+int funcaoHash(int chave){
+    return chave % TAM;
+}
+
+void inserir(Jogador t[]){
+    Jogador j = lerJogador();
+    int id = funcaoHash(j.numero);
+    while(t[id].numero != 0){
+        id = funcaoHash(id + 1);
+    }
+    t[id] = j;
+}
+
+Jogador* busca(Jogador t[], int chave){
+    int id = funcaoHash(chave);
+    while(t[id].numero != 0){
+        if(t[id].numero == chave)
+            return &t[id];
+        else
+            id = funcaoHash(id + 1);
+    }
+    return NULL;
+}
+
+void imprimir(Jogador t[]){
+    int i;
+    for(i = 0; i < TAM; i++){
+        printf("%d\n", i);
+        if(t[i].numero != 0)
+            imprirJogador(t[i]);
+        printf("\n----------------------\n");
+    }
+}
+
+int main(){
+
+    int opcao, valor, retorno;
+    Jogador *buscar, tabela[TAM];
+
+    inicializarTabela(tabela);
+
+    do{
+        printf("\n\t0 - Sair\n\t1 - Inserir\n\t2 - Buscar\n\t3 -Imprimir\n");
+        scanf("%d", &opcao);
+        getchar();
+
+        switch(opcao){
+        case 1:
+            inserir(tabela);
+            fflush (stdin);
+            break;
+        case 2:
+            printf("\tQual numero desseja buscar? ");
+            scanf("%d", &valor);
+            buscar = busca(tabela, valor);
+            if(buscar){
+                printf("\nNumero encontrado:\n");
+                imprirJogador(*buscar);
+            }
+            else
+                printf("\tNumero nao encontrado!\n");
+            break;
+        case 3:
+            imprimir(tabela);
+            break;
+        default:
+            printf("Opcao invalida!\n");
+        }
+    }while(opcao != 0);
+
+    return 0;
+}
